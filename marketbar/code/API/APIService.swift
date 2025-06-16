@@ -13,7 +13,7 @@ typealias TickersResponse = Result<[Ticker], Error>
 final class APIService {
 	
 	private var cancellable: AnyCancellable?
-	private let endpoint: String = "https://query1.finance.yahoo.com/v7/finance/quote?symbols="
+	private let endpoint: String = "https://hq.sinajs.cn?list="
 	
 	func add(tickerString: String, result: @escaping (TickersResponse) -> Void) {
 		let ticker = Ticker(symbol: tickerString, name: "", price: 0.0, previousClose: 0.0)
@@ -42,9 +42,13 @@ final class APIService {
 			result?(.failure(APIError.invalidURL))
 			return
 		}
-		cancellable = URLSession.shared.dataTaskPublisher(for: url)
-			.map { $0.data }
-			.decode(type: QuoteResponse.self, decoder: JSONDecoder())
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("https://finance.sina.com.cn", forHTTPHeaderField: "Referer")
+        
+        cancellable = URLSession.shared.dataTaskPublisher(for: request)
+            .map { String(data: $0.data, encoding: .ascii) ?? "" }
 			.eraseToAnyPublisher()
 			.receive(on: DispatchQueue.main)
 			.sink(receiveCompletion: { completion in
@@ -53,15 +57,21 @@ final class APIService {
 				case .failure(let error):
 					NSLog(error.localizedDescription)
 				}
-			}, receiveValue: { response in
-				let tickers = response.quoteResponse.result
-					.filter { $0.quote != .unknown }
-					.enumerated()
-					.compactMap { index, ticker -> Ticker in
-						var orderedTicker = ticker
-						orderedTicker.orderIndex = index
-						return orderedTicker
-					}
+			}, receiveValue: { responseString in
+                let dataArray: [Double] = responseString.split(separator: ",").compactMap { str in
+                    return Double(str)
+                }
+                let tickers: [Ticker] = [
+                    Ticker(
+                        symbol: "sz002212",
+                        name: "Topsec",
+                        price: dataArray[2],
+                        previousClose: dataArray[1],
+                        open: dataArray[0],
+                        high: dataArray[3],
+                        low: dataArray[4]
+                    )
+                ]
 				result?(.success(tickers))
 			})
 	}

@@ -11,8 +11,18 @@ struct Ticker: Codable {
 	
 	var symbol: String
 	var name: String?
+    // 现价
 	var price: Double?
+    // 昨日收盘价
 	var previousClose: Double?
+    // 今日开盘价
+    var open: Double?
+    // 最高价
+    var high: Double?
+    // 最低价
+    var low: Double?
+    
+    
 	var quoteType: String = ""
 	var marketState: String = ""
 	var preMarketPrice: Double?
@@ -27,7 +37,7 @@ extension Ticker {
 	
 	var isCurrency: Bool { quote == .currency }
 	var quote: Quote { Quote.from(rawValue: quoteType) }
-	var link: URL? { URL(string: "https://finance.yahoo.com/quote/\(symbol)") }
+	var link: URL? { URL(string: "https://finance.sina.com.cn/realstock/company/\(symbol)/nc.shtml") }
 	
 	var simpleSymbol: String {
 		guard !isCurrency else { return name ?? "currency" }
@@ -42,6 +52,26 @@ extension Ticker {
 		guard let price = price else { return "" }
 		return String(format: "%.\(priceHint)f", price)
 	}
+    
+    var highString: String {
+        guard let high = high else { return "" }
+        return String(format: "%.\(priceHint)f", high)
+    }
+    
+    var lowString: String {
+        guard let low = low else { return "" }
+        return String(format: "%.\(priceHint)f", low)
+    }
+    
+    // 涨跌价格
+    var updown: Double {
+        return (price ?? 0) - (previousClose ?? 0)
+    }
+    
+    // 涨跌百分比
+    var percent: String {
+        return String(format: "%.\(priceHint)f", updown / (previousClose ?? 1) * 100) + "%"
+    }
 	
 	var lastPriceString: String {
 		let lastPrice = preMarketPrice ?? postMarketPrice ?? price ?? 1.0

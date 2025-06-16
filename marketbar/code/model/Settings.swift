@@ -12,7 +12,7 @@ let githubLink = URL(string: "https://github.com/manindaniil/market-bar")!
 struct Settings: Codable {
 	
 	var tickers: [Ticker] = []
-	var updateInterval: TimeInterval = 30.0
+	var updateInterval: TimeInterval = 1.0
 	var changesInPercentage: Bool = false
 	var showOnlyOneTicker: Bool = false
 	var showTickerName: Bool = true

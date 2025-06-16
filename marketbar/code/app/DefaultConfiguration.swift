@@ -39,10 +39,18 @@ fileprivate let dogeTicker = Ticker(
 	quoteType: "cryptocurrency",
 	orderIndex: 3)
 
+fileprivate let topsecTicker = Ticker(
+    symbol: "sz002212",
+    name: "Topsec Inc.",
+    price: 0.0,
+    previousClose: 0.0,
+    quoteType: "equity",
+    orderIndex: 0)
+
 extension Settings {
 	
 	static let `default` = Settings(
-		tickers: [appleTicker, teslaTicker, gmeTicker, dogeTicker],
-		updateInterval: 30.0,
+        tickers: [topsecTicker],
+		updateInterval: 1.0,
 		changesInPercentage: true)
 }

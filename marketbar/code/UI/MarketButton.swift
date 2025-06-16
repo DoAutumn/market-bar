@@ -63,13 +63,29 @@ final class MarketButton: NSStatusBarButton {
 	// MARK: - Private
 	
 	private func configure() {
-		let showPremarketInBar = MarketManager.shared.showPremarketInBar
-		let tickersString = tickers
-			.map { " \($0.simpleSymbol) \(showPremarketInBar ? $0.priceString : $0.lastPriceString)" }
-			.reduce("", +)
-		
-		title = tickersString
-		sizeToFit()
+        let attributedString = NSMutableAttributedString()
+                
+        for ticker in tickers {
+            let color: NSColor
+            if ticker.updown > 0 {
+                color = NSColor(red: 252/255.0, green: 110/255.0, blue: 39/255.0, alpha: 1.0)
+            } else {
+                color = NSColor(red: 52/255.0, green: 168/255.0, blue: 83/255.0, alpha: 1.0)
+            }
+            
+            let part = NSAttributedString(
+                string: "\(ticker.symbol)  \(ticker.priceString)  \(ticker.percent)  最高: \(ticker.highString)  最低: \(ticker.lowString)",
+                attributes: [
+                    .foregroundColor: color,
+                    .font: NSFont.systemFont(ofSize: 13)
+                ]
+            )
+            
+            attributedString.append(part)
+        }
+        
+        self.attributedTitle = attributedString
+        sizeToFit()
 		frame.origin.x = initOriginX
 		frame.size.height = 25.0
 		
